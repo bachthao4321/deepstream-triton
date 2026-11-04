@@ -1,0 +1,48 @@
+%YAML:1.0
+
+BaseConfig:
+  minDetectorConfidence: 0.0430
+
+TargetManagement:
+  enableBboxUnClipping: 0
+  preserveStreamUpdateOrder: 0
+  maxTargetsPerStream: 150
+
+  # Tạo / huỷ target
+  minIouDiff4NewTarget: 0.7418
+  minTrackerConfidence: 0.4009
+  probationAge: 2
+  maxShadowTrackingAge: 51
+  earlyTerminationAge: 1
+
+TrajectoryManagement:
+  useUniqueID: 0   # set 1 để dùng 64-bit unique ID
+
+DataAssociator:
+  dataAssociatorType: 0
+  associationMatcherType: 1   # 0=GREEDY | 1=CASCADED
+  checkClassMatch: 1
+
+  minMatchingScore4Overall: 0.4290
+  minMatchingScore4SizeSimilarity: 0.3627
+  minMatchingScore4Iou: 0.2575
+  minMatchingScore4VisualSimilarity: 0.2000
+
+  tentativeDetectorConfidence: 0.0806
+  matchingScoreWeight4Iou: 0.4366
+  matchingScoreWeight4VisualSimilarity: 0.4380
+  matchingScoreWeight4SizeSimilarity: 0.0372
+
+StateEstimator:
+  stateEstimatorType: 1   # 0=SIMPLE_IOU | 1=SIMPLE_KALMAN | 2=SIMPLE_KALMAN_WITH_DA
+
+  # Kalman filter noise
+  noiseWeightVar4Loc: 0.0625
+  noiseWeightVar4Vel: 0.2500
+  useAspectRatio: 1
+
+VisualTracker:
+  visualTrackerType: 1   # 0=NONE | 1=NvDCF
+  useColorNames: 1
+  useHog: 0
+  featureImgSizeLevel: 3

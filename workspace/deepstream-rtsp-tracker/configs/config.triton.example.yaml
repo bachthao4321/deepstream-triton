@@ -1,0 +1,50 @@
+# Copy to config.local.yaml and edit the RTSP URI and Triton address.
+# Paths below are paths INSIDE the DeepStream container.
+sources:
+  - source_id: 0
+    uri: "rtsp://USERNAME:PASSWORD@CAMERA_HOST:554/stream1"
+    type: rtsp
+    camera_name: camera_1
+    enabled: true
+
+inference:
+  mode: triton
+  triton:
+    url: "TRITON_HOST:8101"  # host:port, without http:// or grpc://
+    yolo_model: yolo11m_nonms
+    yolo_max_batch: 4
+    sgie_model: staff_customer  # Empty string disables this classifier.
+    sgie_labels: /workspace/deepstream-rtsp-tracker/models/staff_customer_labels.txt
+    sgie_max_batch: 16
+
+tracker:
+  lib_file: /opt/nvidia/deepstream/deepstream/lib/libnvds_nvmultiobjecttracker.so
+  config_file: /workspace/deepstream-rtsp-tracker/configs/tracker_NvDCF.yml
+
+output:
+  mode: headless
+
+record:
+  enabled: true
+  duration_sec: 60  # 0 = run until Ctrl+C
+  output_dir: /workspace/recordings
+  filename: clip.mkv
+
+native_width: 1920
+native_height: 1080
+bbox_scale_width: 1920
+bbox_scale_height: 1080
+gpu_id: 0
+osd:
+  enabled: true
+  show_bbox: true
+  show_text: true
+
+# Phone/face inference has not been implemented in the Triton probe.
+phone_rule:
+  pgie2_config: ""
+# Keep local ONNX gaze inference disabled for this remote-model configuration.
+gaze_target:
+  onnx_path: ""
+  inout_threshold: 0.3
+log_level: INFO

@@ -1,0 +1,34 @@
+################################################################################
+# Primary GIE (Detector) Config
+# Model: YOLOv11m — COCO 80 classes, NO-NMS (dynamic batch)
+# Output: output0 [batch, 84, 8400] = [cx,cy,w,h + 80 class scores] × 8400 anchors
+# output-tensor-meta=1: bỏ qua nvinfer bbox parsing; YoloTensorParser (pad probe
+#   trên src pad nvinfer) tự decode + NMS (torch/torchvision) từng frame.
+################################################################################
+
+property:
+  gpu-id: 0
+  net-scale-factor: 0.00392156862745098   # 1/255
+  # ONNX no-NMS dynamic-batch: input [batch,3,h,w], output0 [batch,84,anchors].
+  # QUAN TRỌNG: model NMS-nhúng (output [300,6]) cho output KHÔNG có chiều batch
+  # → khi batch>1 chỉ 1 slot có data, detection giảm dần theo pad (100/20/0/0%).
+  # Model no-NMS có output batch-aware; NMS được tự làm trong YoloTensorParser
+  # cho từng frame → mọi cam trong batch xử lý độc lập, detection đều đặn.
+  onnx-file: /workspace/deepstream-rtsp-tracker/models/yolo11m_nonms.onnx
+  # Engine cache: nvinfer build từ onnx-file lần đầu (~26s) rồi serialize ra tên
+  # <onnx>_b<batch>_gpu<id>_<mode>.engine. Trỏ model-engine-file tới đúng tên đó
+  # để lần sau LOAD NGAY, không build lại. Nếu file chưa có, nvinfer tự build.
+  model-engine-file: /workspace/deepstream-rtsp-tracker/models/yolo11m_nonms.onnx_b4_gpu0_fp32.engine
+  labelfile-path: /workspace/deepstream-rtsp-tracker/models/coco_labels.txt
+  # ONNX có chiều H/W động → nvinfer cần infer-dims tường minh (C H W, không kể batch)
+  # để TensorRT chốt optimization profile, nếu không sẽ "Explicit config dims is invalid".
+  infer-dims: 3;640;640
+  batch-size: 4
+  network-mode: 0        # 0=FP32
+  process-mode: 1        # 1=primary
+  model-color-format: 0  # 0=RGB
+  num-detected-classes: 80
+  interval: 0
+  gie-unique-id: 1
+  output-tensor-meta: 1
+  network-type: 100

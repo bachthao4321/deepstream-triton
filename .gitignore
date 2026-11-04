@@ -1,0 +1,66 @@
+# Private runtime configuration (publish examples only)
+.env
+.env.*
+!.env.example
+*.local.yaml
+*.local.yml
+/workspace/deepstream-rtsp-tracker/configs/config.yaml
+.aws/
+.ssh/
+*.pem
+*.key
+
+# SDK installers, model binaries and checkpoints
+*.deb
+*.onnx
+*.engine
+*.plan
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.tflite
+*.h5
+*.bin
+
+# Datasets and archives
+/workspace/datasets/
+datasets/
+*.zip
+*.rar
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+
+# Python environments and caches
+/workspace/venv/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Generated output / training artifacts / third-party checkout
+/workspace/recordings/
+recordings/
+runs/
+work_dirs/
+wandb/
+/workspace/deepstream-rtsp-tracker/training/gazelle-dinov3/
+*.log
+*.mp4
+*.mkv
+*.avi
+*.mov
+pipeline_graph*
+
+# Local editor / agent state
+.idea/
+.vscode/
+.agents/
+.codex/
+.DS_Store

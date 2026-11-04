@@ -1,0 +1,10 @@
+# FPI-Det (phone+face, surveillance-angle) — dataset đã fix format
+# https://github.com/KvCgRv/FPI-Det — MIT license
+path: /ssd1/thaokb/deepstream/workspace/datasets/fpi_det_clean
+train: train/images
+val: val/images
+test: test/images
+
+names:
+  0: phone
+  1: face

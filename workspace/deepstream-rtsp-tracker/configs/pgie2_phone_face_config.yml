@@ -1,0 +1,33 @@
+################################################################################
+# Second Primary GIE — Phone + Face detector (tự train)
+# Model: YOLO11n fine-tune trên FPI-Det (github.com/KvCgRv/FPI-Det, MIT) — ảnh
+#   góc camera giám sát thật (khác COCO — ảnh đời thường, cận cảnh).
+#   mAP50: phone=0.902, face=0.550 (val, xem training/fpi_det/runs/.../results.csv)
+# Output: output0 [batch, 6, 8400] = [cx,cy,w,h + 2 class score (phone,face)] × 8400
+#   Cùng format YOLO11m ở pgie_config.yml (chỉ khác 2 class thay vì 80) — decode
+#   dùng lại y hệt hàm _decode() trong yolo_probe.py.
+#
+# Chạy như "PGIE thứ 2" (process-mode=1 — toàn khung hình, KHÔNG crop theo
+# object PGIE#1 sinh ra) — vì model cần thấy CẢ phone lẫn face trong cùng 1
+# ảnh để luật "phone gần face" hoạt động đúng, không hợp crop-per-person như
+# SGIE thông thường. Chạy TUẦN TỰ sau PGIE#1 trong graph (không phải nhánh
+# song song thật — xem docstring pipeline.py), đọc CÙNG buffer chưa đổi pixel.
+################################################################################
+
+property:
+  gpu-id: 0
+  net-scale-factor: 0.00392156862745098   # 1/255 (ultralytics export chuẩn)
+  onnx-file: /workspace/deepstream-rtsp-tracker/models/phone_face/phone_face_yolo11n.onnx
+  model-engine-file: /workspace/deepstream-rtsp-tracker/models/phone_face/phone_face_yolo11n.onnx_b4_gpu0_fp32.engine
+  labelfile-path: /workspace/deepstream-rtsp-tracker/models/phone_face_labels.txt
+
+  infer-dims: 3;640;640
+  batch-size: 4             # khớp batch-size PGIE#1 (số cam batch cùng lúc)
+  network-mode: 0           # 0=FP32
+  process-mode: 1           # 1=primary (toàn khung hình, không crop)
+  model-color-format: 0     # 0=RGB
+  num-detected-classes: 2
+  interval: 0
+  gie-unique-id: 4          # khác PGIE#1(=1), SGIE staff/customer(=2)
+  output-tensor-meta: 1
+  network-type: 100

@@ -1,0 +1,44 @@
+################################################################################
+# Secondary GIE (Classifier) — Staff vs Customer
+# Model: staff-customer.onnx (ViT-style), input [batch,3,224,224], output [batch,2]
+#   - Output ĐÃ softmax (2 giá trị cộng = 1.0) → classifier-threshold lọc theo prob.
+#   - KHÔNG có preprocessing nhúng → normalize ImageNet làm qua net-scale-factor+offsets.
+#
+# Chạy như SECONDARY (process-mode=2): nvinfer tự crop mỗi object person do PGIE/
+# tracker sinh ra, resize 224×224, classify. operate-on-gie-id=1 + operate-on-
+# class-ids=0 → chỉ classify object 'person' (class 0) từ PGIE (gie-unique-id=1).
+#
+# Preprocess: y = net-scale-factor * (x - offset). ImageNet: (pixel/255 - mean)/std.
+#   net-scale-factor = 1/(255*std_avg) = 1/(255*0.226) = 0.01735
+#   offsets          = 255*mean        = 123.675;116.28;103.53
+#   (std 3 kênh ImageNet 0.229/0.224/0.225 chênh <2% → dùng std trung bình 0.226)
+################################################################################
+
+property:
+  gpu-id: 0
+  net-scale-factor: 0.01735
+  offsets: 123.675;116.28;103.53
+  model-color-format: 0            # 0=RGB (ViT/timm train trên RGB)
+
+  onnx-file: /workspace/deepstream-rtsp-tracker/models/staff-customer.onnx
+  # Engine tự build lần đầu (~vài chục giây) rồi serialize; lần sau nvinfer LOAD
+  # NGAY nếu file tồn tại. Tên engine do nvinfer đặt theo <onnx>_b<batch>_gpu<id>_<mode>.
+  model-engine-file: /workspace/deepstream-rtsp-tracker/models/staff-customer.onnx_b16_gpu0_fp32.engine
+  labelfile-path: /workspace/deepstream-rtsp-tracker/models/staff_customer_labels.txt
+
+  infer-dims: 3;224;224
+  batch-size: 16                   # số object/batch classify (không phải số cam)
+  network-mode: 0                  # 0=FP32
+  process-mode: 2                  # 2=secondary (operate trên object của PGIE)
+  network-type: 1                  # 1=classifier
+  num-detected-classes: 2
+  gie-unique-id: 2                 # id riêng, khác PGIE(=1)
+  operate-on-gie-id: 1             # chỉ xử object do PGIE gie-unique-id=1 sinh
+  operate-on-class-ids: 0          # chỉ class 0 (person)
+  classifier-threshold: 0.5        # prob tối thiểu để gán nhãn
+  # Cache kết quả theo track_id để không classify lại object đã ổn định mỗi frame.
+  # 0 = classify mọi frame (dò/nhìn realtime); tăng lên (vd 15) để tiết kiệm khi
+  # đã tin nhãn ổn định. Để 0 khi đang dò thứ tự class.
+  classifier-async-mode: 0
+  input-object-min-width: 16
+  input-object-min-height: 32
